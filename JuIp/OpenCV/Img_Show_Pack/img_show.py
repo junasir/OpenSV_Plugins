@@ -1,6 +1,12 @@
-from copy import copy, deepcopy
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2023/2/25 13:58
+# @Author  : Jun_军
+# @File    : img_show.py
+
+
+from copy import deepcopy
 from sys import argv
-from time import sleep
 
 import cv2
 from PySide2.QtCore import QRectF, Signal
@@ -18,6 +24,7 @@ class ImgShowUi(JuDialog):
 
     def __init__(self, parent=None, default_parm=None, combox_list=None, log=None, *args, **kwargs):
         super(ImgShowUi, self).__init__(parent, *args, **kwargs)
+        self.setWindowTitle("显示图像")
         self.ui_log = log
         self.combox_list = combox_list
         self._default_parm = default_parm
@@ -163,7 +170,7 @@ class CalcGraphicsNode(QDMGraphicsNode):
 class CalcInputContent(QDMNodeContentWidget):
     def initUI(self):
         self._grid = QGridLayout()
-        self._grid.setContentsMargins(0,0,0,0)
+        self._grid.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self._grid)
         self.label = QLabel()
         self._grid.addWidget(self.label)
@@ -175,10 +182,24 @@ class CalcInputContent(QDMNodeContentWidget):
         # self.edit.setObjectName(self.node.content_label_objname)
 
     def img_show(self, img):
-        img = cv2.resize(img, (300, 300))
-        show = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        showImage = QImage(show.data, show.shape[1], show.shape[0], QImage.Format_RGB888)
-        self.label.setPixmap(QPixmap.fromImage(showImage))
+        show = deepcopy(img)
+
+
+
+        try:
+            # if img.ndim == 2:
+            #     showImage = QImage(show.data, show.shape[1], show.shape[0], QImage.Format_BGR888)
+            # else:
+            #     show = cv2.resize(show, (300, 300))
+            #     show = cv2.cvtColor(show, cv2.COLOR_BGR2RGB)
+            size = (int(self.label.width()), int(self.label.height()))
+            shrink = cv2.resize(show, size, interpolation=cv2.INTER_AREA)
+            show = cv2.cvtColor(shrink, cv2.COLOR_BGR2RGB)
+            showImage = QImage(show.data, show.shape[1], show.shape[0], QImage.Format_RGB888)
+            if self.label:
+                self.label.setPixmap(QPixmap.fromImage(showImage))
+        except BaseException as e:
+            print(e)
 
     def serialize(self):
         res = super().serialize()

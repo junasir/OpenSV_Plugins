@@ -1,12 +1,15 @@
-from copy import copy, deepcopy
-from sys import argv
-from time import sleep
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2023/2/25 13:58
+# @Author  : Jun_军
+# @File    : mediapipe_gesture.py
 
-import cv2
+from copy import deepcopy
+from sys import argv
 from PySide2.QtCore import QRectF, Signal
-from PySide2.QtGui import QImage, QPixmap, Qt
-from PySide2.QtWidgets import QGridLayout, QWidget, QLineEdit, QLabel, QMessageBox, QPushButton, QCompleter, \
-    QApplication, QComboBox, QFrame
+from PySide2.QtGui import QImage, Qt
+from PySide2.QtWidgets import QGridLayout, QLineEdit, QLabel, QMessageBox, QPushButton, QCompleter, \
+    QApplication, QFrame
 
 from JuControl.ju_dialog import JuDialog
 from nodeeditor.node_content_widget import QDMNodeContentWidget
@@ -18,6 +21,7 @@ class MediapipeGestureUi(JuDialog):
 
     def __init__(self, parent=None, default_parm=None, combox_list=None, log=None, *args, **kwargs):
         super(MediapipeGestureUi, self).__init__(parent, *args, **kwargs)
+        self.setWindowTitle("mediapipe手势检测")
         self.ui_log = log
         self.combox_list = combox_list
         self._default_parm = default_parm
@@ -210,7 +214,7 @@ class MediapieGestureContent(QDMNodeContentWidget):
         return res
 
 
-class JuIpMediapipegesture(Node):
+class JuIpMediapipeGesture(Node):
     icon = "icons/in.png"
     op_code = "Mediapipe_Gesture"
     op_title = "Mediapipe手势检测"

@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2023/2/25 13:58
+# @Author  : Jun_军
+# @File    : opencv_gray.py
+
+
 from cv2 import cvtColor, COLOR_BGR2GRAY
 
 

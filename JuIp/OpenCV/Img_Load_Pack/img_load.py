@@ -1,6 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2023/2/25 13:58
+# @Author  : Jun_军
+# @File    : img_load.py
+
+
 from copy import deepcopy
 from sys import argv
-from time import sleep
 
 from PySide2.QtCore import QRectF, Signal
 from PySide2.QtGui import QImage
@@ -16,6 +22,7 @@ class CalcInputWidget(JuDialog):
 
     def __init__(self, parent=None, default_parm=None, log=None, *args, **kwargs):
         super(CalcInputWidget, self).__init__(parent, *args, **kwargs)
+        self.setWindowTitle("加载图像")
         self.ui_log = log
         self._default_parm = default_parm
         self._parameter_change = False
