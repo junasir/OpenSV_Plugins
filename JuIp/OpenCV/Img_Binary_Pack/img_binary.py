@@ -6,7 +6,7 @@ import cv2
 from PySide2.QtCore import QRectF, Signal
 from PySide2.QtGui import QImage, QPixmap, Qt
 from PySide2.QtWidgets import QGridLayout, QWidget, QLineEdit, QLabel, QMessageBox, QPushButton, QCompleter, \
-    QApplication
+    QApplication, QComboBox, QFrame
 
 from JuControl.ju_dialog import JuDialog
 from nodeeditor.node_content_widget import QDMNodeContentWidget
@@ -14,10 +14,10 @@ from nodeeditor.node_graphics_node import QDMGraphicsNode
 from nodeeditor.node_node import Node
 
 
-class ImgGrayUi(JuDialog):
+class ImgBinaryUi(JuDialog):
 
     def __init__(self, parent=None, default_parm=None, combox_list=None, log=None, *args, **kwargs):
-        super(ImgGrayUi, self).__init__(parent, *args, **kwargs)
+        super(ImgBinaryUi, self).__init__(parent, *args, **kwargs)
         self.ui_log = log
         self.combox_list = combox_list
         self._default_parm = default_parm
@@ -32,17 +32,42 @@ class ImgGrayUi(JuDialog):
     def _init_ui(self):
         label_input_variable = QLabel(self, text="输入图像变量:")
         self.label_input_variable = QLineEdit(self)
+        label_thresh = QLabel(self, text="设置阈值:")
+        self.label_thresh = QLineEdit(self)
+        label_maxval = QLabel(self, text="设置灰度最大值:")
+        self.label_maxval = QLineEdit(self)
+        label_type = QLabel(self, text="阈值操作类型:")
+        self.label_type = QLineEdit(self)
+        self.combox_list_thresh = ["THRESH_BINARY", "THRESH_BINARY_INV", "THRESH_TRUNC", "THRESH_TOZERO",
+                                   "THRESH_TOZERO_INV",
+                                   "THRESH_OTSU", "THRESH_TRIANGLE"]
+
+        label_rect = QLabel(self, text="输出变量1:")
+        self.label_rect = QLineEdit(self)
         label_output_variable = QLabel(self, text="输出图像变量:")
         self.label_output_variable = QLineEdit(self)
         self.update_btn = QPushButton(self, text="update")
+        line = QFrame(self)
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        line.setMaximumHeight(3)
+
         self._grid = QGridLayout(self)
-        # self._grid.addWidget(self.btn_img_path, 0, 0)
-        # self._grid.addWidget(self.img_path, 0, 1)
-        self._grid.addWidget(label_input_variable, 1, 0)
-        self._grid.addWidget(self.label_input_variable, 1, 1)
-        self._grid.addWidget(label_output_variable, 2, 0)
-        self._grid.addWidget(self.label_output_variable, 2, 1)
-        self._grid.addWidget(self.update_btn, 3, 0, 1, 2)
+
+        self._grid.addWidget(label_input_variable, 0, 0)
+        self._grid.addWidget(self.label_input_variable, 0, 1)
+        self._grid.addWidget(label_thresh, 1, 0)
+        self._grid.addWidget(self.label_thresh, 1, 1)
+        self._grid.addWidget(label_maxval, 2, 0)
+        self._grid.addWidget(self.label_maxval, 2, 1)
+        self._grid.addWidget(label_type, 3, 0)
+        self._grid.addWidget(self.label_type, 3, 1)
+        self._grid.addWidget(line, 4, 0, 1, 2)
+        self._grid.addWidget(label_rect, 5, 0)
+        self._grid.addWidget(self.label_rect, 5, 1)
+        self._grid.addWidget(label_output_variable, 6, 0)
+        self._grid.addWidget(self.label_output_variable, 6, 1)
+        self._grid.addWidget(self.update_btn, 7, 0, 1, 2)
 
     def auto_complete(self):
         """
@@ -59,15 +84,34 @@ class ImgGrayUi(JuDialog):
         self.completer.setCompletionMode(QCompleter.PopupCompletion)
         self.label_input_variable.setCompleter(self.completer)
 
+        completer = QCompleter(self.combox_list_thresh)
+        completer.setFilterMode(Qt.MatchContains)
+        completer.setCompletionMode(QCompleter.PopupCompletion)
+        self.label_type.setCompleter(completer)
+
     def bind_event(self):
         self.update_btn.clicked.connect(self.generate_parameters)
         self.label_input_variable.textChanged.connect(self._parameter_changed)
 
     def generate_parameters(self):
-        if self.label_input_variable.text() != "" and self.label_output_variable.text() != "":
+        value_list = []
+        output_list = []
+        if self.label_input_variable.text() != "":
+            value_list.append(self.label_input_variable.text())
+        if self.label_thresh.text() != "":
+            value_list.append(self.label_thresh.text())
+        if self.label_maxval.text() != "":
+            value_list.append(self.label_maxval.text())
+        if self.label_type.text() != "":
+            value_list.append(self.label_type.text())
+        if self.label_rect.text() != "":
+            output_list.append(self.label_rect.text())
+        if self.label_output_variable.text() != "":
+            output_list.append(self.label_output_variable.text())
+        if len(value_list) == 4 and len(output_list) == 2:
             self._default_parm["variable_input"] = [self.label_input_variable.text()]
-            self._default_parm["value"] = [self.label_input_variable.text()]
-            self._default_parm["variable_output"] = [self.label_output_variable.text()]
+            self._default_parm["value"] = value_list
+            self._default_parm["variable_output"] = output_list
             self._parameter_change = False
             self.save_ok = True
             self.close()
@@ -75,10 +119,14 @@ class ImgGrayUi(JuDialog):
             QMessageBox.warning(self, "错误", '请输入相应的参数.', QMessageBox.Ok)
 
     def _parameters_show(self):
-        if len(self._default_parm["variable_input"]) != 0:
-            self.label_input_variable.setText(self._default_parm["variable_input"][0])
-        if len(self._default_parm["variable_output"]) != 0:
-            self.label_output_variable.setText(self._default_parm["variable_output"][0])
+        if len(self._default_parm["value"]) == 4:
+            self.label_input_variable.setText(self._default_parm["value"][0])
+            self.label_thresh.setText(self._default_parm["value"][1])
+            self.label_maxval.setText(self._default_parm["value"][2])
+            self.label_type.setText(self._default_parm["value"][3])
+        if len(self._default_parm["variable_output"]) == 2:
+            self.label_rect.setText(self._default_parm["variable_output"][0])
+            self.label_output_variable.setText(self._default_parm["variable_output"][1])
 
     def get_parameters(self):
         return self._default_parm
@@ -111,7 +159,7 @@ class CalcGraphicsNode(QDMGraphicsNode):
         self.default_parm = self.init_node_ui.default_parm
         if self.default_parm is None:
             self.default_parm = {"object": {"type": "OpenCV", "index": 0},
-                                 "operation_file": "JuOpencvGray", "operation_func": "opencv_gray_func",
+                                 "operation_file": "JuOpencvBinary", "operation_func": "opencv_binary_func",
                                  "node_input_num": 1, "node_output_num": 1,
                                  "value": [],
                                  "result_flag": False,
@@ -125,7 +173,7 @@ class CalcGraphicsNode(QDMGraphicsNode):
             default_parm = deepcopy(self.node.getInputs()[i].grNode.default_parm)
             for j in range(len(default_parm["variable_output"])):
                 combox_list.append(default_parm["variable_output"][j])
-        parameters_win = ImgGrayUi(default_parm=self.default_parm, combox_list=combox_list, log=self.user_logger)
+        parameters_win = ImgBinaryUi(default_parm=self.default_parm, combox_list=combox_list, log=self.user_logger)
         parameters_win.exec_()
         if parameters_win.save_ok:
             self.default_parm = deepcopy(parameters_win.get_parameters())
@@ -170,22 +218,7 @@ class CalcGraphicsNode(QDMGraphicsNode):
 
 class CalcInputContent(QDMNodeContentWidget):
     def initUI(self):
-        self._grid = QGridLayout()
-        self._grid.setContentsMargins(0,0,0,0)
-        self.setLayout(self._grid)
-        self.label = QLabel()
-        self._grid.addWidget(self.label)
-        # self.label.setPixmap(QPixmap("./JuResource/bac_1.png"))  # 我的图片格式为png.与代码在同一目录下
-        self.label.setScaledContents(True)
-
-        # self.edit = QLineEdit("1", self)
-        # self.edit.setAlignment(Qt.AlignRight)
-        # self.edit.setObjectName(self.node.content_label_objname)
-
-    def img_show(self, img):
-        show = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        showImage = QImage(show.data, show.shape[1], show.shape[0], QImage.Format_RGB888)
-        self.label.setPixmap(QPixmap.fromImage(showImage))
+        pass
 
     def serialize(self):
         res = super().serialize()
@@ -202,14 +235,14 @@ class CalcInputContent(QDMNodeContentWidget):
         return res
 
 
-class JuIpImggray(Node):
-    icon = "icons/in.png"
-    op_code = "CalcNode_Imggray"
-    op_title = "图像灰度"
-    content_label_objname = "calc_node_img_gray"
+class JuIpImgBinary(Node):
+    icon = ""
+    op_code = "CalcNode_Imgbinary"
+    op_title = "图像二值化"
+    content_label_objname = "calc_node_img_binary"
     version = "v0.1"
 
-    def __init__(self, scene, inputs=[(1, "input_img")], outputs=[(1, "output_img")]):
+    def __init__(self, scene, inputs=[(1, "input_img")], outputs=[(2, ""), (2, "output_img")]):
         super().__init__(scene, self.__class__.op_title, inputs, outputs)
         self.user_logger = self.scene.user_logger
 
@@ -221,10 +254,11 @@ class JuIpImggray(Node):
         res = super().serialize()
         res['op_code'] = self.__class__.op_code
         return res
+
     #
     def deserialize(self, data, hashmap={}, restore_id=True):
         res = super().deserialize(data, hashmap, restore_id)
-        print("Deserialized CalcNode '%s'" % self.__class__.__name__, "res:", res)
+        # print("Deserialized CalcNode '%s'" % self.__class__.__name__, "res:", res)
         return res
 
 
@@ -238,7 +272,6 @@ if __name__ == "__main__":
                     "variable_input": [],
                     "variable_output": ["img"]}
     app = QApplication(argv)
-    window = ImgGrayUi(default_parm=default_parm, combox_list=["img"])
+    window = ImgBinaryUi(default_parm=default_parm, combox_list=["img"])
     window.show()
     exit(app.exec_())
-    pass

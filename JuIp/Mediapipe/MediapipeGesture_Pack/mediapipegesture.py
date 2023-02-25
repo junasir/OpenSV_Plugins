@@ -80,8 +80,8 @@ class MediapipeGestureUi(JuDialog):
         if self.label_thresh.text() != "":
             try:
                 value_list.append(int(self.label_thresh.text()))
-            except BaseException as e:
-                print(e)
+            except Exception:
+                pass
         if self.label_output_variable.text() != "":
             output_list.append(self.label_output_variable.text())
         if len(value_list) == 2 and len(output_list) == 1:
@@ -233,7 +233,7 @@ class JuIpMediapipegesture(Node):
     #
     def deserialize(self, data, hashmap={}, restore_id=True):
         res = super().deserialize(data, hashmap, restore_id)
-        print("Deserialized CalcNode '%s'" % self.__class__.__name__, "res:", res)
+        # print("Deserialized CalcNode '%s'" % self.__class__.__name__, "res:", res)
         return res
 
 
