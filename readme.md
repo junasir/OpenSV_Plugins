@@ -16,7 +16,7 @@
 
 7.图像HSV通道分离
 
-
+8.图像高斯模糊
 
 二、Mediapipe
 
@@ -27,6 +27,8 @@
 
 
 ##### 插件预览
+![image](images/202302282155.png)
+
 ![image](images/Xm-SYlUGG1JhoVZeV4MQGTgTzFhneWH3-P8TFr_NFJI.png)
 
 ![image](images/AxWrwTsVA6I5D6umrjEh47HMEZ3M1ZDYmbt64c1xhOA.png)
