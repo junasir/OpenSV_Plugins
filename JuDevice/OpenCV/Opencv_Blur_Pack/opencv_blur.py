@@ -3,8 +3,10 @@
 # @Time    : 2023/2/27 23:07
 # @Author  : Jun_军
 # @File    : opencv_bgr_split.py
+from copy import deepcopy
 
-from cv2 import blur, erode, dilate, inRange, bitwise_and, cvtColor, COLOR_BGR2HSV
+from cv2 import blur, erode, dilate, inRange, bitwise_and, cvtColor, COLOR_BGR2HSV, RETR_TREE, findContours,\
+    CHAIN_APPROX_SIMPLE, rectangle, boundingRect
 from numpy import uint8, ones, array
 
 
@@ -55,6 +57,21 @@ class JuOpencvBlur(object):
             mask = inRange(imgHSV, lower, upper)
             imgResult = bitwise_and(img, img, mask=mask)
             result = [True, [imgResult], None, None]
+        except BaseException as e:
+            result = [False, e, None, None]
+        return result
+
+    def opencv_contours_func(self, img, img1):
+        try:
+            img1 = deepcopy(img1)
+            img = deepcopy(img)
+            contours, hierarchy = findContours(deepcopy(img), RETR_TREE, CHAIN_APPROX_SIMPLE)
+            for c in contours:
+                x, y, w, h = boundingRect(c)
+                print(x, y, w, h)
+                if x != 0 and y != 0 and w != img1.shape[1] and h != img1.shape[0]:
+                    rectangle(img1, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            result = [True, [img1], None, None]
         except BaseException as e:
             result = [False, e, None, None]
         return result
