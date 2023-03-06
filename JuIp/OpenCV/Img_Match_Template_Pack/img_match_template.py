@@ -35,6 +35,7 @@ class ImgShowUi(JuDialog):
         self._parameters_show()
 
     def _init_ui(self):
+        self.combox_list_thresh = ["TM_CCOEFF_NORMED"]
         label_input_variable = QLabel(self, text="输入原始图像:")
         self.label_input_variable = QLineEdit(self)
         label_input_variable1 = QLabel(self, text="输入模板图像:")
@@ -67,6 +68,10 @@ class ImgShowUi(JuDialog):
         self.completer.setCompletionMode(QCompleter.PopupCompletion)
         self.label_input_variable.setCompleter(self.completer)
         self.label_input_variable1.setCompleter(self.completer)
+        completer = QCompleter(self.combox_list_thresh)
+        completer.setFilterMode(Qt.MatchContains)
+        completer.setCompletionMode(QCompleter.PopupCompletion)
+        self.label_1.setCompleter(completer)
 
     def bind_event(self):
         self.update_btn.clicked.connect(self.generate_parameters)
