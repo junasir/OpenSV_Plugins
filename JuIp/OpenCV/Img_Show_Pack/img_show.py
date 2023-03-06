@@ -187,15 +187,7 @@ class CalcInputContent(QDMNodeContentWidget):
 
     def img_show(self, img):
         show = deepcopy(img)
-
-
-
         try:
-            # if img.ndim == 2:
-            #     showImage = QImage(show.data, show.shape[1], show.shape[0], QImage.Format_BGR888)
-            # else:
-            #     show = cv2.resize(show, (300, 300))
-            #     show = cv2.cvtColor(show, cv2.COLOR_BGR2RGB)
             size = (int(self.label.width()), int(self.label.height()))
             shrink = cv2.resize(show, size, interpolation=cv2.INTER_AREA)
             show = cv2.cvtColor(shrink, cv2.COLOR_BGR2RGB)
