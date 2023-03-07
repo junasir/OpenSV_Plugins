@@ -1,5 +1,5 @@
 # OpenSV 插件包
-## 本仓库为OpenSV平台。
+## OpenSV平台代码参考一下仓库。
 
 [https://github.com/junasir/OpenSV](https://github.com/junasir/OpenSV)
 
