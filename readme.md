@@ -20,6 +20,7 @@
 16.canny边缘检测
 17.模板匹配
 18.hough直线检测
+19.仿射变换
 
 
 二、Mediapipe
@@ -37,5 +38,10 @@
 
 ![image](images/AxWrwTsVA6I5D6umrjEh47HMEZ3M1ZDYmbt64c1xhOA.png)
 
+![image](images/4ef890c966513e9ef6a52affed309df.png)
 
+![image](images/Db0B2TxyS0G22WaZ79cc7bWnZs7OdRe9Oe1oqn_cyQE.png)
 
+![image](images/20230306205035.png)
+
+![image](images/20230306205031.png)
