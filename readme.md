@@ -26,6 +26,10 @@
 17.模板匹配
 18.hough直线检测
 19.仿射变换
+20.print函数
+21.图像中值滤波
+22.mediapipe姿态估计
+23.mediapipe手势估计
 
 
 二、Mediapipe
