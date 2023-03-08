@@ -30,6 +30,7 @@
 21.图像中值滤波
 22.mediapipe姿态估计
 23.mediapipe手势估计
+24.图像方框滤波
 
 
 二、Mediapipe

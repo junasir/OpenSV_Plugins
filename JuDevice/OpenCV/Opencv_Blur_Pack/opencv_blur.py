@@ -6,7 +6,7 @@
 from copy import deepcopy
 
 from cv2 import blur, erode, dilate, inRange, bitwise_and, cvtColor, COLOR_BGR2HSV, RETR_TREE, findContours,\
-    CHAIN_APPROX_SIMPLE, rectangle, boundingRect
+    CHAIN_APPROX_SIMPLE, rectangle, boundingRect, boxFilter
 from numpy import uint8, ones, array
 
 
@@ -72,6 +72,17 @@ class JuOpencvBlur(object):
                 if x != 0 and y != 0 and w != img1.shape[1] and h != img1.shape[0]:
                     rectangle(img1, (x, y), (x + w, y + h), (0, 255, 0), 2)
             result = [True, [img1], None, None]
+        except BaseException as e:
+            result = [False, e, None, None]
+        return result
+
+    def opencv_box_filter_func(self, img, ddepth, ksize, normalize):
+        try:
+            ksize = int(ksize)
+            ddepth = int(ddepth)
+            normalize = int(normalize)
+            img = boxFilter(img, ddepth, (ksize, ksize), normalize=normalize)
+            result = [True, [img], None, None]
         except BaseException as e:
             result = [False, e, None, None]
         return result
