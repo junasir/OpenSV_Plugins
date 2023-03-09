@@ -6,7 +6,7 @@
 from copy import deepcopy
 
 from cv2 import blur, erode, dilate, inRange, bitwise_and, cvtColor, COLOR_BGR2HSV, RETR_TREE, findContours,\
-    CHAIN_APPROX_SIMPLE, rectangle, boundingRect, boxFilter
+    CHAIN_APPROX_SIMPLE, rectangle, boundingRect, boxFilter, medianBlur
 from numpy import uint8, ones, array
 
 
@@ -18,6 +18,15 @@ class JuOpencvBlur(object):
         try:
             ksize = int(ksize)
             img = blur(img, (ksize, ksize))
+            result = [True, [img], None, None]
+        except BaseException as e:
+            result = [False, e, None, None]
+        return result
+
+    def opencv_zhongzhi_func(self, img, ksize):
+        try:
+            ksize = int(ksize)
+            img = medianBlur(img, ksize)
             result = [True, [img], None, None]
         except BaseException as e:
             result = [False, e, None, None]
