@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2023/2/25 13:58
+# @Time    : 2023/3/10 19:00
 # @Author  : Jun_军
-# @File    : img_binary.py
+# @File    : img_canny.py
 
 
 from copy import deepcopy
@@ -18,11 +18,11 @@ from nodeeditor.node_graphics_node import QDMGraphicsNode
 from nodeeditor.node_node import Node
 
 
-class ImgFindContoursUi(JuDialog):
+class ImgShowUi(JuDialog):
 
     def __init__(self, parent=None, default_parm=None, combox_list=None, log=None, *args, **kwargs):
-        super(ImgFindContoursUi, self).__init__(parent, *args, **kwargs)
-        self.setWindowTitle("图像找外接矩形操作")
+        super(ImgShowUi, self).__init__(parent, *args, **kwargs)
+        self.setWindowTitle("Laplacian边缘检测")
         self.ui_log = log
         self.combox_list = combox_list
         self._default_parm = default_parm
@@ -35,10 +35,14 @@ class ImgFindContoursUi(JuDialog):
         self._parameters_show()
 
     def _init_ui(self):
-        label_input_variable = QLabel(self, text="输入找外接矩形图像变量:")
+        label_input_variable = QLabel(self, text="输入图像变量:")
         self.label_input_variable = QLineEdit(self)
-        label_input_variable1 = QLabel(self, text="输入画框图像变量:")
-        self.label_input_variable1 = QLineEdit(self)
+        label_1 = QLabel(self, text="ddepth:")
+        self.label_1 = QLineEdit(self)
+        self.label_1.setText("CV_16S")
+        self.label_1.setEnabled(False)
+        label_2 = QLabel(self, text="kszie:")
+        self.label_2 = QLineEdit(self)
         label_output_variable = QLabel(self, text="输出图像变量:")
         self.label_output_variable = QLineEdit(self)
         self.update_btn = QPushButton(self, text="update")
@@ -47,18 +51,22 @@ class ImgFindContoursUi(JuDialog):
 
         self._grid.addWidget(label_input_variable, 0, 0)
         self._grid.addWidget(self.label_input_variable, 0, 1)
-        self._grid.addWidget(label_input_variable1, 1, 0)
-        self._grid.addWidget(self.label_input_variable1, 1, 1)
+        self._grid.addWidget(label_1, 1, 0)
+        self._grid.addWidget(self.label_1, 1, 1)
+        self._grid.addWidget(label_2, 2, 0)
+        self._grid.addWidget(self.label_2, 2, 1)
         self._grid.addWidget(label_output_variable, 6, 0)
         self._grid.addWidget(self.label_output_variable, 6, 1)
         self._grid.addWidget(self.update_btn, 7, 0, 1, 2)
 
     def auto_complete(self):
+        """
+        配置自动补全函数
+        """
         self.completer = QCompleter(self.combox_list)
         self.completer.setFilterMode(Qt.MatchContains)
         self.completer.setCompletionMode(QCompleter.PopupCompletion)
         self.label_input_variable.setCompleter(self.completer)
-        self.label_input_variable1.setCompleter(self.completer)
 
     def bind_event(self):
         self.update_btn.clicked.connect(self.generate_parameters)
@@ -69,12 +77,14 @@ class ImgFindContoursUi(JuDialog):
         output_list = []
         if self.label_input_variable.text() != "":
             value_list.append(self.label_input_variable.text())
-        if self.label_input_variable1.text() != "":
-            value_list.append(self.label_input_variable1.text())
+        if self.label_1.text() != "":
+            value_list.append(self.label_1.text())
+        if self.label_2.text() != "":
+            value_list.append(self.label_2.text())
         if self.label_output_variable.text() != "":
             output_list.append(self.label_output_variable.text())
-        if len(value_list) == 2 and len(output_list) == 1:
-            self._default_parm["variable_input"] = [self.label_input_variable.text(), self.label_input_variable1.text()]
+        if len(value_list) == 3 and len(output_list) == 1:
+            self._default_parm["variable_input"] = [self.label_input_variable.text()]
             self._default_parm["value"] = value_list
             self._default_parm["variable_output"] = output_list
             self._parameter_change = False
@@ -84,9 +94,10 @@ class ImgFindContoursUi(JuDialog):
             QMessageBox.warning(self, "错误", '请输入相应的参数.', QMessageBox.Ok)
 
     def _parameters_show(self):
-        if len(self._default_parm["value"]) == 2:
+        if len(self._default_parm["value"]) == 3:
             self.label_input_variable.setText(self._default_parm["value"][0])
-            self.label_input_variable1.setText(self._default_parm["value"][1])
+            self.label_1.setText(self._default_parm["value"][1])
+            self.label_2.setText(self._default_parm["value"][2])
         if len(self._default_parm["variable_output"]) == 1:
             self.label_output_variable.setText(self._default_parm["variable_output"][0])
 
@@ -121,8 +132,8 @@ class CalcGraphicsNode(QDMGraphicsNode):
         self.default_parm = self.init_node_ui.default_parm
         if self.default_parm is None:
             self.default_parm = {"object": {"type": "OpenCV", "index": 0},
-                                 "operation_file": "JuOpencvBlur", "operation_func": "opencv_contours_func",
-                                 "node_input_num": 2, "node_output_num": 1,
+                                 "operation_file": "JuOpencvHough", "operation_func": "opencv_laplacian_func",
+                                 "node_input_num": 1, "node_output_num": 1,
                                  "value": [],
                                  "result_flag": False,
                                  "result": {},
@@ -138,7 +149,7 @@ class CalcGraphicsNode(QDMGraphicsNode):
                     combox_list.append(default_parm["variable_output"][j])
         except BaseException as e:
             self.user_logger.info(e)
-        parameters_win = ImgFindContoursUi(default_parm=self.default_parm, combox_list=combox_list, log=self.user_logger)
+        parameters_win = ImgShowUi(default_parm=self.default_parm, combox_list=combox_list, log=self.user_logger)
         parameters_win.exec_()
         if parameters_win.save_ok:
             self.default_parm = deepcopy(parameters_win.get_parameters())
@@ -200,14 +211,14 @@ class CalcInputContent(QDMNodeContentWidget):
         return res
 
 
-class JuIpImgFindContours(Node):
+class JuIpImgLaplacian(Node):
     icon = ""
-    op_code = "CalcNode_ImgFindContours"
-    op_title = "找外接矩形"
-    content_label_objname = "calc_node_img_find_contours"
+    op_code = "CalcNode_ImgLaplacian"
+    op_title = "Laplacian边缘检测"
+    content_label_objname = "calc_node_img_laplacian"
     version = "v0.1"
 
-    def __init__(self, scene, inputs=[(2, "input_contours_img"), (2, "input_ori_img")], outputs=[(1, "output_img")]):
+    def __init__(self, scene, inputs=[(1, "input_img")], outputs=[(2, "output_img")]):
         super().__init__(scene, self.__class__.op_title, inputs, outputs)
         self.user_logger = self.scene.user_logger
 
@@ -237,6 +248,6 @@ if __name__ == "__main__":
                     "variable_input": [],
                     "variable_output": ["img"]}
     app = QApplication(argv)
-    window = ImgFindContoursUi(default_parm=default_parm, combox_list=["img"])
+    window = ImgShowUi(default_parm=default_parm, combox_list=["img"])
     window.show()
     exit(app.exec_())

@@ -131,10 +131,13 @@ class CalcGraphicsNode(QDMGraphicsNode):
 
     def double_click_ui_show(self):
         combox_list = []
-        for i in range(self.default_parm["node_input_num"]):
-            default_parm = deepcopy(self.node.getInput(i).grNode.default_parm)
-            for j in range(len(default_parm["variable_output"])):
-                combox_list.append(default_parm["variable_output"][j])
+        try:
+            for i in range(self.default_parm["node_input_num"]):
+                default_parm = deepcopy(self.node.getInput(i).grNode.default_parm)
+                for j in range(len(default_parm["variable_output"])):
+                    combox_list.append(default_parm["variable_output"][j])
+        except BaseException as e:
+            self.user_logger.info(e)
         parameters_win = ImgShowUi(default_parm=self.default_parm, combox_list=combox_list, log=self.user_logger)
         parameters_win.exec_()
         if parameters_win.save_ok:

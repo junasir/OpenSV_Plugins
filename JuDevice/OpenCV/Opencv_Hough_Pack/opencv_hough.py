@@ -5,7 +5,7 @@
 # @File    : opencv_hough.py
 from copy import deepcopy
 
-from cv2 import HoughLines, Canny, line, TM_CCOEFF_NORMED, matchTemplate, rectangle
+from cv2 import HoughLines, Canny, line, TM_CCOEFF_NORMED, CV_16S, matchTemplate, rectangle, Laplacian, convertScaleAbs
 from numpy import pi, cos, sin
 
 
@@ -72,6 +72,15 @@ class JuOpencvHough(object):
                 rectangle(image, (coordinate[i][0], coordinate[i][1]), (coordinate[i][2], coordinate[i][3]),
                           (0, 0, 255), 2)
             result = [True, [image], None, None]
+        except BaseException as e:
+            result = [False, e, None, None]
+        return result
+
+    def opencv_laplacian_func(self, img, num1, num2):
+        try:
+            edges = Laplacian(deepcopy(img), CV_16S, ksize=int(num2))
+            dst = convertScaleAbs(edges)
+            result = [True, [dst], None, None]
         except BaseException as e:
             result = [False, e, None, None]
         return result
