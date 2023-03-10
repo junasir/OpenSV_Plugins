@@ -32,6 +32,7 @@
 23.mediapipe手势估计
 24.图像方框滤波
 24.图像中值滤波
+24.图像Laplacian算子
 
 
 二、Mediapipe
