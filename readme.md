@@ -31,9 +31,10 @@
 22.mediapipe姿态估计
 23.mediapipe手势估计
 24.图像方框滤波
-24.图像中值滤波
-24.图像Laplacian算子
-24.图像sobel算子
+25.图像中值滤波
+26.图像Laplacian算子
+27.图像sobel算子
+28.图像scharr算子
 
 
 二、Mediapipe
