@@ -6,7 +6,7 @@
 from copy import deepcopy
 
 from cv2 import HoughLines, Canny, line, TM_CCOEFF_NORMED, CV_16S, matchTemplate, rectangle, Laplacian,\
-    convertScaleAbs, Sobel, addWeighted
+    convertScaleAbs, Sobel, addWeighted, Scharr
 from numpy import pi, cos, sin
 
 
@@ -90,6 +90,18 @@ class JuOpencvHough(object):
         try:
             x = Sobel(img, CV_16S, int(num2), int(num3))
             y = Sobel(img, CV_16S, int(num3), int(num2))
+            absX = convertScaleAbs(x)
+            absY = convertScaleAbs(y)
+            dst = addWeighted(absX, 0.5, absY, 0.5, 0)
+            result = [True, [dst], None, None]
+        except BaseException as e:
+            result = [False, e, None, None]
+        return result
+
+    def opencv_scharr_func(self, img, num1, num2, num3):
+        try:
+            x = Scharr(img, CV_16S, int(num2), int(num3))
+            y = Scharr(img, CV_16S, int(num3), int(num2))
             absX = convertScaleAbs(x)
             absY = convertScaleAbs(y)
             dst = addWeighted(absX, 0.5, absY, 0.5, 0)
