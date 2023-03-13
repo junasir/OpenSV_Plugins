@@ -1,4 +1,5 @@
 # OpenSV 插件包
+## OpenSV平台将支持视频实时处理的功能。
 ## OpenSV平台代码参考以下仓库。
 
 [https://github.com/junasir/OpenSV](https://github.com/junasir/OpenSV)
