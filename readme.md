@@ -1,5 +1,6 @@
 # OpenSV 插件包
 ## OpenSV平台将支持视频实时处理的功能。
+**插件已经升级为最新版，支持全局变量传值，可以一键运行**
 ## OpenSV平台代码参考以下仓库。
 
 [https://github.com/junasir/OpenSV](https://github.com/junasir/OpenSV)
@@ -36,6 +37,7 @@
 26.图像Laplacian算子
 27.图像sobel算子
 28.图像scharr算子
+29.haarcascade人脸检测
 
 
 二、Mediapipe

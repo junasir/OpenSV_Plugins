@@ -11,7 +11,7 @@ from sys import argv
 from PySide2.QtCore import QRectF, Signal
 from PySide2.QtGui import QImage
 from PySide2.QtWidgets import QGridLayout, QLineEdit, QLabel, QPushButton, QApplication, QFileDialog, \
-    QMessageBox
+    QMessageBox, QComboBox
 from JuControl.ju_dialog import JuDialog
 from nodeeditor.node_content_widget import QDMNodeContentWidget
 from nodeeditor.node_graphics_node import QDMGraphicsNode
@@ -20,7 +20,7 @@ from nodeeditor.node_node import Node
 
 class CalcInputWidget(JuDialog):
 
-    def __init__(self, parent=None, default_parm=None, log=None, *args, **kwargs):
+    def __init__(self, parent=None, default_parm=None, combox_list=None, log=None, *args, **kwargs):
         super(CalcInputWidget, self).__init__(parent, *args, **kwargs)
         self.setWindowTitle("加载图像")
         self.ui_log = log
@@ -35,17 +35,22 @@ class CalcInputWidget(JuDialog):
     def _init_ui(self):
         self.btn_img_path = QPushButton(self, text="图片路径:")
         self.img_path = QLineEdit(self)
-        self.img_path.setReadOnly(True)
+        # self.img_path.setReadOnly(True)
 
         label_output_variable = QLabel(self, text="输出图像变量:")
         self.label_output_variable = QLineEdit(self)
+        label_combobox = QLabel(self, text="模式:")
+        self.label_combobox = QComboBox(self)
+        self.label_combobox.addItems(["img", "video"])
         self.update_btn = QPushButton(self, text="update")
         self._grid = QGridLayout(self)
         self._grid.addWidget(self.btn_img_path, 0, 0)
         self._grid.addWidget(self.img_path, 0, 1)
-        self._grid.addWidget(label_output_variable, 1, 0)
-        self._grid.addWidget(self.label_output_variable, 1, 1)
-        self._grid.addWidget(self.update_btn, 2, 0, 1, 2)
+        self._grid.addWidget(label_combobox, 1, 0)
+        self._grid.addWidget(self.label_combobox, 1, 1)
+        self._grid.addWidget(label_output_variable, 2, 0)
+        self._grid.addWidget(self.label_output_variable, 2, 1)
+        self._grid.addWidget(self.update_btn, 3, 0, 1, 2)
 
     def bind_event(self):
         self.update_btn.clicked.connect(self.generate_parameters)
@@ -54,26 +59,35 @@ class CalcInputWidget(JuDialog):
         self.label_output_variable.textChanged.connect(self._parameter_changed)
 
     def generate_parameters(self):
-        if self.label_output_variable.text() != "" and self.img_path.text() != "":
-            self._default_parm["value"] = [self.img_path.text()]
-            self._default_parm["variable_output"] = [self.label_output_variable.text()]
+        value_list = []
+        output_list = []
+        if self.img_path.text() != "":
+            value_list.append(self.img_path.text())
+        if self.label_combobox.currentText() != "":
+            value_list.append(self.label_combobox.currentText())
+        if self.label_output_variable.text() != "":
+            output_list.append(self.label_output_variable.text())
+        if len(value_list) == 2 and len(output_list) == 1:
+            self._default_parm["value"] = value_list
+            self._default_parm["variable_output"] = output_list
             self._parameter_change = False
             self.save_ok = True
             self.close()
         else:
             QMessageBox.warning(self, "错误", '请输入相应的参数.', QMessageBox.Ok)
 
+    def _parameters_show(self):
+        if len(self._default_parm["value"]) == 2:
+            self.img_path.setText(self._default_parm["value"][0])
+            self.label_combobox.setCurrentText(self._default_parm["value"][1])
+        if len(self._default_parm["variable_output"]) == 1:
+            self.label_output_variable.setText(self._default_parm["variable_output"][0])
+
     def get_img_path(self):
         imgName, imgType = QFileDialog.getOpenFileName(self, "打开图片", "",
                                                        "*.jpg;;*.png;;All Files(*)")
         if imgName != '':
             self.img_path.setText(str(imgName))
-
-    def _parameters_show(self):
-        if len(self._default_parm["value"]) != 0:
-            self.img_path.setText(self._default_parm["value"][0])
-        if len(self._default_parm["variable_output"]) != 0:
-            self.label_output_variable.setText(self._default_parm["variable_output"][0])
 
     def get_parameters(self):
         return self._default_parm
@@ -115,7 +129,10 @@ class CalcGraphicsNode(QDMGraphicsNode):
                                  "variable_output": ["img"]}
 
     def double_click_ui_show(self):
-        parameters_win = CalcInputWidget(default_parm=self.default_parm, log=self.user_logger)
+        self.combox_list = []
+        self.get_node_info(self.node.inputs)
+        parameters_win = CalcInputWidget(default_parm=self.default_parm, log=self.user_logger,
+                                         combox_list=self.combox_list)
         parameters_win.exec_()
         if parameters_win.save_ok:
             self.default_parm = deepcopy(parameters_win.get_parameters())
@@ -124,6 +141,17 @@ class CalcGraphicsNode(QDMGraphicsNode):
             default_parm["result_flag"] = False
             default_parm["result"] = {}
             self.init_node_ui.default_parm = self.default_parm
+
+    def get_node_info(self, input):
+        for l in input:
+            node = l.edges
+            for i in node:
+                if "start_socket" in i.__dir__():
+                    default_parm_node = i.start_socket.node
+                    default_parm = default_parm_node.grNode.default_parm
+                    for k in range(len(default_parm["variable_output"])):
+                        self.combox_list.append(default_parm["variable_output"][k])
+                    self.get_node_info(default_parm_node.inputs)
 
     def mouseDoubleClickEvent(self, event):
         """Overriden event for doubleclick. Resend to `Node::onDoubleClicked`"""
@@ -184,7 +212,7 @@ class JuIpImgLoad(Node):
     content_label_objname = "calc_node_input"
     version = "v0.1"
 
-    def __init__(self, scene, inputs=[], outputs=[(1, "output_img")]):
+    def __init__(self, scene, inputs=[(1, "input")], outputs=[(1, "output")]):
         super().__init__(scene, self.__class__.op_title, inputs, outputs)
         self.user_logger = self.scene.user_logger
 

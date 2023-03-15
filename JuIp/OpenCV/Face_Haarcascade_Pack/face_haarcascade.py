@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2023/3/6 19:00
+# @Time    : 2023/3/15 22:52
 # @Author  : Jun_军
-# @File    : img_canny.py
+# @File    : face_haarcascade.py
 
 
 from copy import deepcopy
@@ -10,7 +10,7 @@ from sys import argv
 from PySide2.QtCore import QRectF, Signal
 from PySide2.QtGui import QImage, Qt
 from PySide2.QtWidgets import QGridLayout, QLineEdit, QLabel, QMessageBox, QPushButton, QCompleter, \
-    QApplication, QFrame
+    QApplication, QFrame, QFileDialog
 
 from JuControl.ju_dialog import JuDialog
 from nodeeditor.node_content_widget import QDMNodeContentWidget
@@ -22,7 +22,7 @@ class ImgShowUi(JuDialog):
 
     def __init__(self, parent=None, default_parm=None, combox_list=None, log=None, *args, **kwargs):
         super(ImgShowUi, self).__init__(parent, *args, **kwargs)
-        self.setWindowTitle("Canny边缘检测")
+        self.setWindowTitle("haarcascade人脸检测器")
         self.ui_log = log
         self.combox_list = combox_list
         self._default_parm = default_parm
@@ -37,38 +37,47 @@ class ImgShowUi(JuDialog):
     def _init_ui(self):
         label_input_variable = QLabel(self, text="输入图像变量:")
         self.label_input_variable = QLineEdit(self)
-        label_1 = QLabel(self, text="参数一:")
-        self.label_1 = QLineEdit(self)
-        label_2 = QLabel(self, text="参数二:")
-        self.label_2 = QLineEdit(self)
-        label_3 = QLabel(self, text="参数三:")
-        self.label_3 = QLineEdit(self)
+        label_thresh = QLabel(self, text="scaleFactor:")
+        self.label_thresh = QLineEdit(self)
+        label_maxval = QLabel(self, text="minNeighbors:")
+        self.label_maxval = QLineEdit(self)
+        label_type = QPushButton(self, text="路径:")
+        self.label_type = QLineEdit(self)
+        self.label_type.setReadOnly(True)
         label_output_variable = QLabel(self, text="输出图像变量:")
         self.label_output_variable = QLineEdit(self)
         self.update_btn = QPushButton(self, text="update")
-
+        label_type.clicked.connect(self.get_path)
+        line = QFrame(self)
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        line.setMaximumHeight(3)
         self._grid = QGridLayout(self)
-
         self._grid.addWidget(label_input_variable, 0, 0)
         self._grid.addWidget(self.label_input_variable, 0, 1)
-        self._grid.addWidget(label_1, 1, 0)
-        self._grid.addWidget(self.label_1, 1, 1)
-        self._grid.addWidget(label_2, 2, 0)
-        self._grid.addWidget(self.label_2, 2, 1)
-        self._grid.addWidget(label_3, 3, 0)
-        self._grid.addWidget(self.label_3, 3, 1)
+        self._grid.addWidget(label_thresh, 1, 0)
+        self._grid.addWidget(self.label_thresh, 1, 1)
+        self._grid.addWidget(label_maxval, 2, 0)
+        self._grid.addWidget(self.label_maxval, 2, 1)
+        self._grid.addWidget(label_type, 3, 0)
+        self._grid.addWidget(self.label_type, 3, 1)
+        self._grid.addWidget(line, 4, 0, 1, 2)
         self._grid.addWidget(label_output_variable, 6, 0)
         self._grid.addWidget(self.label_output_variable, 6, 1)
         self._grid.addWidget(self.update_btn, 7, 0, 1, 2)
 
+    def get_path(self):
+        imgName, imgType = QFileDialog.getOpenFileName(self, "模型选择", "",
+                                                       "*.xml")
+        if imgName != '':
+            self.label_type.setText(str(imgName))
+
     def auto_complete(self):
-        """
-        配置自动补全函数
-        """
         self.completer = QCompleter(self.combox_list)
         self.completer.setFilterMode(Qt.MatchContains)
         self.completer.setCompletionMode(QCompleter.PopupCompletion)
         self.label_input_variable.setCompleter(self.completer)
+        self.label_type.setCompleter(self.completer)
 
     def bind_event(self):
         self.update_btn.clicked.connect(self.generate_parameters)
@@ -79,12 +88,12 @@ class ImgShowUi(JuDialog):
         output_list = []
         if self.label_input_variable.text() != "":
             value_list.append(self.label_input_variable.text())
-        if self.label_1.text() != "":
-            value_list.append(self.label_1.text())
-        if self.label_2.text() != "":
-            value_list.append(self.label_2.text())
-        if self.label_3.text() != "":
-            value_list.append(self.label_3.text())
+        if self.label_thresh.text() != "":
+            value_list.append(self.label_thresh.text())
+        if self.label_maxval.text() != "":
+            value_list.append(self.label_maxval.text())
+        if self.label_type.text() != "":
+            value_list.append(self.label_type.text())
         if self.label_output_variable.text() != "":
             output_list.append(self.label_output_variable.text())
         if len(value_list) == 4 and len(output_list) == 1:
@@ -100,9 +109,9 @@ class ImgShowUi(JuDialog):
     def _parameters_show(self):
         if len(self._default_parm["value"]) == 4:
             self.label_input_variable.setText(self._default_parm["value"][0])
-            self.label_1.setText(self._default_parm["value"][1])
-            self.label_2.setText(self._default_parm["value"][2])
-            self.label_3.setText(self._default_parm["value"][3])
+            self.label_thresh.setText(self._default_parm["value"][1])
+            self.label_maxval.setText(self._default_parm["value"][2])
+            self.label_type.setText(self._default_parm["value"][3])
         if len(self._default_parm["variable_output"]) == 1:
             self.label_output_variable.setText(self._default_parm["variable_output"][0])
 
@@ -137,7 +146,7 @@ class CalcGraphicsNode(QDMGraphicsNode):
         self.default_parm = self.init_node_ui.default_parm
         if self.default_parm is None:
             self.default_parm = {"object": {"type": "OpenCV", "index": 0},
-                                 "operation_file": "JuOpencvHough", "operation_func": "opencv_canny_func",
+                                 "operation_file": "JuOpencvTest", "operation_func": "opencv_haarcascade",
                                  "node_input_num": 1, "node_output_num": 1,
                                  "value": [],
                                  "result_flag": False,
@@ -221,11 +230,11 @@ class CalcInputContent(QDMNodeContentWidget):
         return res
 
 
-class JuIpImgCanny(Node):
+class JuIpFaceHaarcascade(Node):
     icon = ""
-    op_code = "CalcNode_ImgCanny"
-    op_title = "Canny边缘检测"
-    content_label_objname = "calc_node_img_canny"
+    op_code = "CalcNode_haarcascade"
+    op_title = "haarcascade人脸检测器"
+    content_label_objname = "calc_node_face_haarcascade"
     version = "v0.1"
 
     def __init__(self, scene, inputs=[(1, "input")], outputs=[(2, "output")]):

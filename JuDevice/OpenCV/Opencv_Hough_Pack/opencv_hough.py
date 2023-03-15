@@ -66,12 +66,16 @@ class JuOpencvHough(object):
             result = [False, e, None, None]
         return result
 
-    def opencv_draw_rectangle_func(self, coordinate, img):
+    def opencv_draw_rectangle_func(self, coordinate, img, mode="1"):
         try:
             image = deepcopy(img)
-            for i in range(len(coordinate)):
-                rectangle(image, (coordinate[i][0], coordinate[i][1]), (coordinate[i][2], coordinate[i][3]),
-                          (0, 0, 255), 2)
+            if mode == "0":
+                for i in range(len(coordinate)):
+                    rectangle(image, (coordinate[i][0], coordinate[i][1]), (coordinate[i][2], coordinate[i][3]),
+                              (0, 0, 255), 2)
+            else:
+                for (x, y, w, h) in coordinate:
+                    rectangle(image, (x, y), (x + w, y + w), (0, 255, 0), 2)
             result = [True, [image], None, None]
         except BaseException as e:
             result = [False, e, None, None]

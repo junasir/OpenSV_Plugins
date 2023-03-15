@@ -9,7 +9,7 @@ class JuBaseFunc(object):
     def __init__(self, log=None):
         self.user_logger = log
 
-    def base_print(self, info, context):
+    def base_print(self, info):
         try:
             if type(info) is str or type(info) is bytes:
                 self.user_logger.info(eval(info))

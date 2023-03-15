@@ -132,12 +132,9 @@ class CalcGraphicsNode(QDMGraphicsNode):
                                  "variable_output": []}
 
     def double_click_ui_show(self):
-        combox_list = []
-        for i in range(len(self.node.getInputs())):
-            default_parm = deepcopy(self.node.getInputs()[i].grNode.default_parm)
-            for j in range(len(default_parm["variable_output"])):
-                combox_list.append(default_parm["variable_output"][j])
-        parameters_win = ImgShowUi(default_parm=self.default_parm, combox_list=combox_list, log=self.user_logger)
+        self.combox_list = []
+        self.get_node_info(self.node.inputs)
+        parameters_win = ImgShowUi(default_parm=self.default_parm, combox_list=self.combox_list, log=self.user_logger)
         parameters_win.exec_()
         if parameters_win.save_ok:
             self.default_parm = deepcopy(parameters_win.get_parameters())
@@ -146,6 +143,17 @@ class CalcGraphicsNode(QDMGraphicsNode):
             default_parm["result_flag"] = False
             default_parm["result"] = {}
             self.init_node_ui.default_parm = self.default_parm
+
+    def get_node_info(self, input):
+        for l in input:
+            node = l.edges
+            for i in node:
+                if "start_socket" in i.__dir__():
+                    default_parm_node = i.start_socket.node
+                    default_parm = default_parm_node.grNode.default_parm
+                    for k in range(len(default_parm["variable_output"])):
+                        self.combox_list.append(default_parm["variable_output"][k])
+                    self.get_node_info(default_parm_node.inputs)
 
     def mouseDoubleClickEvent(self, event):
         """Overriden event for doubleclick. Resend to `Node::onDoubleClicked`"""
@@ -206,7 +214,7 @@ class JuIpImgZhongzhiBlur(Node):
     content_label_objname = "calc_node_img_zhong_blur"
     version = "v0.1"
 
-    def __init__(self, scene, inputs=[(1, "input_img")], outputs=[(2, "output_img")]):
+    def __init__(self, scene, inputs=[(1, "input")], outputs=[(2, "output")]):
         super().__init__(scene, self.__class__.op_title, inputs, outputs)
         self.user_logger = self.scene.user_logger
 
